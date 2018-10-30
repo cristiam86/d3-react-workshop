@@ -1,0 +1,153 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Ejemplo 5</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+</head>
+<body>
+    <div id="chart" style="width:100%;height: 600px;border:1px solid gray;"></div>
+    <script>
+        var width, height, padding, rectPadding = 5, realWidth, realHeight, svg, yScale, xScale, xAxis, yAxis, barsHeight, colorScale;
+        var data = [];
+
+        var formatPercent = d3.format(".0%");
+
+        function calcVars(){
+            width = document.getElementById('chart').offsetWidth;
+            height = document.getElementById('chart').offsetHeight;
+            padding = 20;
+            realWidth = width - (padding * 2)
+            realHeight = height - (padding * 2)
+            barsHeight = realHeight / 2;
+        }
+
+        function initChart(){
+            d3.select("svg").remove();
+            svg = d3.select("#chart").append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .append("g")
+                .attr("transform", "translate(" + padding + "," + padding + ")")
+                
+            svg.append("rect")
+                .attr("width", realWidth)
+                .attr("height", realHeight)
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("fill", '#cdcdcd');
+        }
+
+        function removeData(){
+            d3.selectAll(".bar").remove();
+        }
+
+        function configScales(){
+            var maxValue = d3.max(data, function(d){ return d.value });
+            var minValue = d3.min(data, function(d){ return d.value });
+
+            yScale = d3.scaleLinear()
+                .domain([0, maxValue])
+                .rangeRound([3*realHeight/4, realHeight/4]);
+
+            xScale = d3.scaleBand()
+                .domain(data.map(function (d) {
+                    return d.letter;
+                }))
+                .rangeRound([padding, realWidth-padding])
+                .padding(0.1);
+
+            colorScale = d3.scaleOrdinal(d3.schemeAccent)
+        }
+
+        function drawAxis(){
+            xAxis = d3.axisBottom(xScale);
+
+            yAxis = d3.axisLeft(yScale)
+                .tickFormat(formatPercent);
+
+            svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + 3*realHeight/4 + ")")
+                .call(xAxis);
+
+            svg.append("g")
+                .attr("class", "y axis")
+                .attr("transform", "translate("+padding+",0)")
+                .call(yAxis)
+                .append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("dy", ".71em")
+                .style("text-anchor", "end")
+                .text("Frequency");
+        }
+
+        function redrawChart(){
+            calcVars();
+            initChart();
+            removeData();
+            loadData();
+            configScales();
+            drawAxis();
+            drawData();
+        }
+
+        function drawData(){
+            svg.selectAll('.bar')
+                .data(data)
+                .enter()
+                .append("rect")
+                .attr('class', 'bar')
+                .attr('x', function(d) { return xScale(d.letter); })
+                .attr('y', function(d) { 
+                    return yScale(d.value); 
+                })
+                .attr('width', xScale.bandwidth())
+                .attr('height', function(d) { return (3*realHeight/4) - yScale(d.value); })
+                .style("fill", function(d,i) { return colorScale(i) });
+        }
+
+        window.onresize = redrawChart;
+
+        redrawChart();
+
+        function loadData() {
+            data  = [
+                {"letter": "A",	"value": 0.08167},
+                {"letter": "B",	"value": 0.01492},
+                {"letter": "C",	"value": 0.02780},
+                {"letter": "D",	"value": 0.04253},
+                {"letter": "E",	"value": 0.12702},
+                {"letter": "F",	"value": 0.02288},
+                {"letter": "G",	"value": 0.02022},
+                {"letter": "H",	"value": 0.06094},
+                {"letter": "I",	"value": 0.06973},
+                {"letter": "J",	"value": 0.00153},
+                {"letter": "K",	"value": 0.00747},
+                {"letter": "L",	"value": 0.04025},
+                {"letter": "M",	"value": 0.02517},
+                {"letter": "N",	"value": 0.06749},
+                {"letter": "O",	"value": 0.07507},
+                {"letter": "P",	"value": 0.01929},
+                {"letter": "Q",	"value": 0.00098},
+                {"letter": "R",	"value": 0.05987},
+                {"letter": "S",	"value": 0.06333},
+                {"letter": "T",	"value": 0.09056},
+                {"letter": "U",	"value": 0.02758},
+                {"letter": "V",	"value": 0.01037},
+                {"letter": "W",	"value": 0.02465},
+                {"letter": "X",	"value": 0.00150},
+                {"letter": "Y",	"value": 0.01971},
+                {"letter": "Z",	"value": 0.00074}
+            ];
+        }
+
+    </script>
+</body>
+</html>
+
+<!--
+
+-->
