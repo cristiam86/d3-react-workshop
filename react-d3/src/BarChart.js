@@ -7,13 +7,30 @@ export default class BarChart extends Component {
     super(props);
 
     this._rootNode = React.createRef();
+
+    this.data = [];
+
+    this.onRezize = this.onRezize.bind(this);
+  }
+
+  onRezize(){
+    this.update(
+      this._rootNode,
+      this.data,
+      this.props.config,
+      this._chart
+   );
   }
 
   componentDidMount() {
+    window.addEventListener("resize", this.onRezize);
+
     this.getData((data) => {
+      this.data = data;
+
       this._chart = this.create(
         this._rootNode,
-        data
+        this.data
       );
     })
     
@@ -21,9 +38,11 @@ export default class BarChart extends Component {
 
   componentDidUpdate() {
     this.getData((data) => {
+      this.data = data;
+
       this.update(
         this._rootNode,
-        data,
+        this.data,
         this.props.config,
         this._chart
      );
@@ -31,6 +50,7 @@ export default class BarChart extends Component {
   } 
 
   componentWillUnmount() {
+    window.removeEventListener("resize", this.onRezize);
     this.destroy(this._rootNode);
   }
 
@@ -48,17 +68,8 @@ export default class BarChart extends Component {
   }
 
   create(el, data){
-    if(!data || data.length <= 0){
-      d3.select(el.current)
-        .append("div")
-        .attr("class","no-results")
-        .html("There are no results with your current filters");
-      return;
-    }
-    
     const formatPercent = d3.format(".0%");
     const rect = d3.select(el.current).node().getBoundingClientRect();
-    console.log('TCL: BarChart -> create -> rect', rect); 
     
     let width = rect.width;
     let height = rect.height;
@@ -80,10 +91,7 @@ export default class BarChart extends Component {
             .attr("fill", '#cdcdcd');
 
     var maxValue = d3.max(data, function(d){ return d.value });
-    console.log('TCL: BarChart -> create -> data', data);
-    console.log('TCL: BarChart -> create -> maxValue', maxValue);
     var minValue = d3.min(data, function(d){ return d.value });
-    console.log('TCL: BarChart -> create -> minValue', minValue);
 
     let yScale = d3.scaleLinear()
         .domain([0, maxValue])
@@ -133,11 +141,11 @@ export default class BarChart extends Component {
         .style("fill", function(d,i) { return colorScale(i) });
   }
 
-  update(el, data){
+  update(el){
     this.destroy(el);
     this._chart = this.create(
       this._rootNode,
-      data
+      this.data
     );
   }
 
